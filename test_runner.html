@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏测试运行器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-info {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .test-controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn:active {
+            background-color: #3e8e41;
+        }
+        .test-results {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        .log-info { color: #333; }
+        .log-success { color: #4CAF50; }
+        .log-error { color: #f44336; }
+        .log-warning { color: #ff9800; }
+        .game-iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>天工百物 · 三元配对游戏 - 测试运行器</h1>
+        
+        <div class="test-info">
+            <h2>测试说明</h2>
+            <p>这是一个游戏测试运行器，可以直接在浏览器中测试游戏的完整功能。</p>
+            <ul>
+                <li>游戏将在下方iframe中加载</li>
+                <li>测试脚本会自动运行并显示结果</li>
+                <li>可以查看详细的测试日志</li>
+                <li>支持手动控制测试流程</li>
+            </ul>
+        </div>
+        
+        <div class="test-controls">
+            <button class="btn" onclick="runTest()">运行测试</button>
+            <button class="btn" onclick="clearLogs()">清空日志</button>
+            <button class="btn" onclick="reloadGame()">重新加载游戏</button>
+        </div>
+        
+        <h2>游戏预览</h2>
+        <iframe class="game-iframe" id="gameFrame" src="index.html"></iframe>
+        
+        <h2>测试结果</h2>
+        <div class="test-results" id="testResults">
+            <div class="log-entry log-info">点击"运行测试"按钮开始测试...</div>
+        </div>
+    </div>
+    
+    <script>
+        // 测试结果显示函数
+        function displayLog(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log-entry log-${type}`;
+            logDiv.textContent = message;
+            resultsDiv.appendChild(logDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        // 运行测试
+        function runTest() {
+            displayLog('=== 开始运行游戏测试 ===', 'info');
+            
+            const gameFrame = document.getElementById('gameFrame');
+            const gameWindow = gameFrame.contentWindow;
+            
+            // 等待游戏加载完成
+            setTimeout(() => {
+                try {
+                    // 检查游戏对象是否存在
+                    if (typeof gameWindow.game !== 'undefined') {
+                        displayLog('✅ 游戏对象已加载', 'success');
+                        
+                        // 运行测试脚本
+                        const testScript = gameWindow.document.createElement('script');
+                        testScript.src = 'complete_test.js';
+                        testScript.onload = () => {
+                            displayLog('✅ 测试脚本已加载', 'success');
+                        };
+                        testScript.onerror = (error) => {
+                            displayLog(`❌ 测试脚本加载失败: ${error.message}`, 'error');
+                        };
+                        
+                        gameWindow.document.body.appendChild(testScript);
+                    } else {
+                        displayLog('❌ 游戏对象未找到', 'error');
+                        displayLog('尝试初始化游戏...', 'info');
+                        
+                        // 尝试初始化游戏
+                        if (typeof gameWindow.TetrisGame !== 'undefined') {
+                            gameWindow.game = new gameWindow.TetrisGame();
+                            displayLog('✅ 游戏已手动初始化', 'success');
+                            
+                            // 运行测试脚本
+                            const testScript = gameWindow.document.createElement('script');
+                            testScript.src = 'complete_test.js';
+                            gameWindow.document.body.appendChild(testScript);
+                        } else {
+                            displayLog('❌ 无法初始化游戏，TetrisGame类未找到', 'error');
+                        }
+                    }
+                } catch (error) {
+                    displayLog(`❌ 测试过程中发生错误: ${error.message}`, 'error');
+                }
+            }, 1000);
+        }
+        
+        // 清空日志
+        function clearLogs() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="log-entry log-info">日志已清空，点击"运行测试"按钮开始测试...</div>';
+        }
+        
+        // 重新加载游戏
+        function reloadGame() {
+            const gameFrame = document.getElementById('gameFrame');
+            gameFrame.src = gameFrame.src;
+            clearLogs();
+            displayLog('游戏已重新加载', 'info');
+        }
+        
+        // 监听iframe的加载事件
+        document.getElementById('gameFrame').addEventListener('load', () => {
+            displayLog('游戏页面已加载完成', 'info');
+        });
+    </script>
+</body>
+</html>

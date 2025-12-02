@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>关卡切换测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 关卡切换测试工具</h1>
+        <p>此工具用于测试关卡切换逻辑是否正确。</p>
+        
+        <h2>当前状态</h2>
+        <div id="currentStatus" class="result">
+            <div>当前关卡: <strong id="currentLevel">1</strong></div>
+            <div>关卡名称: <strong id="levelName">耒（lěi）</strong></div>
+        </div>
+        
+        <h2>测试操作</h2>
+        <button onclick="simulateLevel1Complete()">✅ 模拟第一关通关</button>
+        <button onclick="simulateLevel2Complete()">✅ 模拟第二关通关</button>
+        <button onclick="simulateLevel3Complete()">✅ 模拟第三关通关</button>
+        <button onclick="resetTest()">🔄 重置测试</button>
+        
+        <h2>测试结果</h2>
+        <div id="testResults"></div>
+        
+        <h2>调试信息</h2>
+        <div id="debugInfo" style="background:#f9f9f9;padding:10px;border-radius:5px;font-family:monospace;font-size:12px;max-height:300px;overflow-y:auto;"></div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        let testGame;
+        
+        function log(message, isError = false) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'result';
+            debugInfo.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+        
+        function updateStatus() {
+            if (!testGame) return;
+            document.getElementById('currentLevel').textContent = testGame.level;
+            document.getElementById('levelName').textContent = testGame.elementNames[testGame.level] || testGame.level;
+        }
+        
+        function addResult(message, success = true) {
+            const results = document.getElementById('testResults');
+            const className = success ? 'result' : 'result error';
+            results.innerHTML += `<div class="${className}">${success ? '✅' : '❌'} ${message}</div>`;
+        }
+        
+        function simulateLevel1Complete() {
+            log('开始模拟第一关通关...');
+            if (!testGame) {
+                testGame = new TetrisGame();
+                log('游戏实例已创建');
+            }
+            
+            log(`通关前 - 当前关卡: ${testGame.level}`);
+            
+            // 模拟通关：设置完成状态
+            testGame.level = 1;
+            testGame.level1Data.completed = [];
+            for (let i = 0; i < 11; i++) {
+                testGame.level1Data.completed.push({
+                    index: i,
+                    object: true,
+                    feature: true,
+                    value: true
+                });
+            }
+            
+            log(`模拟数据设置完成 - completed数量: ${testGame.level1Data.completed.length}`);
+            
+            // 调用下一关方法
+            testGame.goToNextLevel();
+            
+            log(`切换后 - 当前关卡: ${testGame.level}`);
+            log(`切换后 - 关卡名称: ${testGame.elementNames[testGame.level]}`);
+            log(`切换后 - level2Data三元组数量: ${testGame.level2Data.triples.length}`);
+            
+            updateStatus();
+            
+            if (testGame.level === 2 && testGame.elementNames[testGame.level] === '耜（sì）') {
+                addResult('第一关通关后成功跳转到第二关！', true);
+                log('✅ 测试通过：第一关 → 第二关', false);
+            } else {
+                addResult(`第一关通关后跳转失败！当前关卡: ${testGame.level}`, false);
+                log(`❌ 测试失败：期望level=2，实际level=${testGame.level}`, true);
+            }
+        }
+        
+        function simulateLevel2Complete() {
+            log('开始模拟第二关通关...');
+            if (!testGame || testGame.level !== 2) {
+                log('❌ 请先模拟第一关通关', true);
+                addResult('请先模拟第一关通关', false);
+                return;
+            }
+            
+            log(`通关前 - 当前关卡: ${testGame.level}`);
+            
+            // 模拟通关
+            testGame.level2Data.completed = [];
+            for (let i = 0; i < 16; i++) {
+                testGame.level2Data.completed.push({
+                    index: i,
+                    object: true,
+                    feature: true,
+                    value: true
+                });
+            }
+            
+            testGame.goToNextLevel();
+            
+            log(`切换后 - 当前关卡: ${testGame.level}`);
+            log(`切换后 - 关卡名称: ${testGame.elementNames[testGame.level]}`);
+            
+            updateStatus();
+            
+            if (testGame.level === 3 && testGame.elementNames[testGame.level] === '犁（lí）') {
+                addResult('第二关通关后成功跳转到第三关！', true);
+                log('✅ 测试通过：第二关 → 第三关', false);
+            } else {
+                addResult(`第二关通关后跳转失败！当前关卡: ${testGame.level}`, false);
+                log(`❌ 测试失败：期望level=3，实际level=${testGame.level}`, true);
+            }
+        }
+        
+        function simulateLevel3Complete() {
+            log('开始模拟第三关通关...');
+            if (!testGame || testGame.level !== 3) {
+                log('❌ 请先模拟前两关通关', true);
+                addResult('请先模拟前两关通关', false);
+                return;
+            }
+            
+            log(`通关前 - 当前关卡: ${testGame.level}`);
+            log('第三关是最后一关，通关后应该显示最终通关提示');
+            addResult('第三关测试完成', true);
+        }
+        
+        function resetTest() {
+            log('重置测试...');
+            testGame = null;
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('currentLevel').textContent = '1';
+            document.getElementById('levelName').textContent = '耒（lěi）';
+            log('测试已重置');
+        }
+        
+        // 页面加载时的提示
+        window.addEventListener('DOMContentLoaded', () => {
+            log('=== 关卡切换测试工具已就绪 ===');
+            log('点击按钮开始测试');
+        });
+    </script>
+</body>
+</html>

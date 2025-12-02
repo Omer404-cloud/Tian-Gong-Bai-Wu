@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关卡切换测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .log {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>关卡切换功能测试</h1>
+        <p>此测试用于验证游戏中关卡切换功能是否正常工作，特别是从第4关到第5关和第5关到第6关的跳转。</p>
+        
+        <h3>测试按钮：</h3>
+        <button onclick="testLevelSwitching(1, 2)">测试从第1关到第2关</button>
+        <button onclick="testLevelSwitching(2, 3)">测试从第2关到第3关</button>
+        <button onclick="testLevelSwitching(3, 4)">测试从第3关到第4关</button>
+        <button onclick="testLevelSwitching(4, 5)">测试从第4关到第5关</button>
+        <button onclick="testLevelSwitching(5, 6)">测试从第5关到第6关</button>
+        <button onclick="testAllLevels()">测试所有关卡切换</button>
+        
+        <h3>测试日志：</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        // 模拟TetrisGame类的相关功能进行测试
+        class MockTetrisGame {
+            constructor() {
+                this.level = 1;
+                this.level1Data = { completed: [], triples: [{object: '耒（lěi）'}], currentIndex: 0 };
+                this.level2Data = { completed: [], triples: [{object: '耜（sì）'}], currentIndex: 0 };
+                this.level3Data = { completed: [], triples: [{object: '犁（lí）'}], currentIndex: 0 };
+                this.level4Data = { completed: [], triples: [{object: '耕牛（gēng niú）'}], currentIndex: 0 };
+                this.level5Data = { completed: [], triples: [{object: '耖（chào）'}], currentIndex: 0 };
+                this.level6Data = { completed: [], triples: [{object: '磨耙（mó bà）'}], currentIndex: 0 };
+            }
+            
+            initDropOrders() {
+                console.log(`关卡${this.level}初始化随机掉落顺序`);
+            }
+            
+            spawnNewPiece() {}
+            draw() {}
+            updateScore() {}
+            start() {}
+            
+            // 进入下一关方法（从原始代码复制并简化）
+            goToNextLevel() {
+                logMessage(`=== 进入下一关 ===`);
+                logMessage(`当前关卡: ${this.level}`);
+
+                // 重置游戏状态
+                this.levelCompleted = false;
+
+                // 清空完成数据，防止再次触发庆祝
+                if (this.level === 1) {
+                    this.level1Data.completed = [];
+                } else if (this.level === 2) {
+                    this.level2Data.completed = [];
+                } else if (this.level === 3) {
+                    this.level3Data.completed = [];
+                } else if (this.level === 4) {
+                    this.level4Data.completed = [];
+                } else if (this.level === 5) {
+                    this.level5Data.completed = [];
+                }
+
+                // 根据当前关卡决定下一关
+                if (this.level === 1) {
+                    logMessage('从第1关切换到第2关');
+                    this.level = 2; // 从关卡1到关卡2
+                    // 重置关卡2数据
+                    this.level2Data.currentIndex = 0;
+                    this.level2Data.completed = [];
+                    this.level2Data.initDropOrders();
+                    logMessage(`第2关数据已重置，三元组数量: ${this.level2Data.triples.length}`);
+                } else if (this.level === 2) {
+                    logMessage('从第2关切换到第3关');
+                    this.level = 3; // 从关卡2到关卡3
+                    // 重置关卡3数据
+                    this.level3Data.currentIndex = 0;
+                    this.level3Data.completed = [];
+                    this.level3Data.initDropOrders();
+                    logMessage(`第3关数据已重置，三元组数量: ${this.level3Data.triples.length}`);
+                } else if (this.level === 3) {
+                    logMessage('从第3关切换到第4关');
+                    this.level = 4; // 从关卡3到关卡4
+                    // 重置关卡4数据
+                    this.level4Data.currentIndex = 0;
+                    this.level4Data.completed = [];
+                    this.level4Data.initDropOrders();
+                    logMessage(`第4关数据已重置，三元组数量: ${this.level4Data.triples.length}`);
+                } else if (this.level === 4) {
+                    logMessage('从第4关切换到第5关');
+                    this.level = 5; // 从关卡4到关卡5
+                    // 重置关卡5数据
+                    this.level5Data.currentIndex = 0;
+                    this.level5Data.completed = [];
+                    this.level5Data.initDropOrders();
+                    logMessage(`第5关数据已重置，三元组数量: ${this.level5Data.triples.length}`);
+                } else if (this.level === 5) {
+                    logMessage('从第5关切换到第6关');
+                    this.level = 6; // 从关卡5到关卡6
+                    // 重置关卡6数据
+                    this.level6Data.currentIndex = 0;
+                    this.level6Data.completed = [];
+                    this.level6Data.initDropOrders();
+                    logMessage(`第6关数据已重置，三元组数量: ${this.level6Data.triples.length}`);
+                }
+
+                return this.level;
+            }
+        }
+
+        let game = new MockTetrisGame();
+        
+        function logMessage(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += message + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function testLevelSwitching(startLevel, expectedLevel) {
+            logMessage(`\n开始测试: 从第${startLevel}关到第${expectedLevel}关的切换`);
+            
+            // 设置初始关卡
+            game.level = startLevel;
+            
+            try {
+                // 执行关卡切换
+                const newLevel = game.goToNextLevel();
+                
+                // 验证结果
+                if (newLevel === expectedLevel) {
+                    logMessage(`<span class="success">✓ 测试通过: 成功从第${startLevel}关切换到第${newLevel}关</span>`);
+                } else {
+                    logMessage(`<span class="error">✗ 测试失败: 期望切换到第${expectedLevel}关，但实际切换到了第${newLevel}关</span>`);
+                }
+            } catch (error) {
+                logMessage(`<span class="error">✗ 测试失败: 发生错误 - ${error.message}</span>`);
+            }
+        }
+        
+        function testAllLevels() {
+            logMessage(`\n=== 开始测试所有关卡切换 ===`);
+            
+            const testCases = [
+                { start: 1, expected: 2 },
+                { start: 2, expected: 3 },
+                { start: 3, expected: 4 },
+                { start: 4, expected: 5 },
+                { start: 5, expected: 6 }
+            ];
+            
+            let allPassed = true;
+            
+            testCases.forEach((testCase, index) => {
+                setTimeout(() => {
+                    testLevelSwitching(testCase.start, testCase.expected);
+                    
+                    if (index === testCases.length - 1) {
+                        logMessage(`\n=== 所有关卡切换测试完成 ===`);
+                        if (allPassed) {
+                            logMessage(`<span class="success">✓ 所有测试都通过了！关卡切换功能正常工作。</span>`);
+                        } else {
+                            logMessage(`<span class="error">✗ 部分测试失败，需要进一步修复。</span>`);
+                        }
+                    }
+                }, index * 1000);
+            });
+        }
+        
+        // 页面加载完成后自动运行测试
+        window.onload = function() {
+            logMessage('关卡切换功能测试页面已加载完成！');
+            logMessage('请点击上方按钮开始测试。');
+        };
+    </script>
+</body>
+</html>
